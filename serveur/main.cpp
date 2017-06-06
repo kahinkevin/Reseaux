@@ -1,9 +1,12 @@
 #undef UNICODE
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
 #include <winsock2.h>
 #include <iostream>
 #include <algorithm>
 #include <strstream>
+#include <string>
+#include <chrono>
 
 using namespace std;
 
@@ -12,7 +15,9 @@ using namespace std;
 
 // External functions
 extern DWORD WINAPI EchoHandler(void* sd_);
-extern void DoSomething(char *src, char *dest);
+//extern void DoSomething(char *src, char *dest);
+
+char question[200];
 
 // List of Winsock error constants mapped to an interpretation string.
 // Note that this list must remain sorted by the error constants'
@@ -125,8 +130,101 @@ const char* WSAGetLastErrorMessage(const char* pcMessagePrefix, int nErrorID = 0
 	return acErrorBuffer;
 }
 
-int main(void)
-{
+void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
+
+	char adresseIPTemp[16];
+	cout << "Entrer IP adresse: ";
+	gets_s(adresseIPTemp);
+	for (size_t i = 0; i < sizeof(adresseIPTemp); i++) {
+		adresseIP[i] = adresseIPTemp[i];
+	}
+
+	cout << endl << "Entrer Port d'ecoute: ";
+	cin >> port;
+
+	cout << endl << "Entre Duree Sondage: ";
+	cin >> dureeSondage;
+
+}
+
+void saisirQuestion() {
+
+
+	cout << endl << "Entrer question: ";
+	cin.ignore();
+	gets_s(question);
+	cout << endl;
+	
+}
+
+int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerSocket) {
+
+	hostent *thisHost;
+	thisHost = gethostbyname(adresseIP);
+	char* ip;
+	ip = inet_ntoa(*(struct in_addr*) *thisHost->h_addr_list);
+	printf("Adresse locale trouvee: %s ", ip);
+
+	sockaddr_in service;
+	service.sin_family = AF_INET;
+	service.sin_addr.s_addr = inet_addr(adresseIP);
+	service.sin_port = htons(port);
+
+
+	if (bind(ServerSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR) {
+		cerr << WSAGetLastErrorMessage("bind() failed.") << endl;
+		closesocket(ServerSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	if (listen(ServerSocket, 30) == SOCKET_ERROR) {
+		cerr << WSAGetLastErrorMessage("Error listening on socket.") << endl;
+		closesocket(ServerSocket);
+		WSACleanup();
+		return 1;
+	}
+
+	printf("En attente des connections des clients sur le port %d...\n\n", ntohs(service.sin_port));
+	bool toggle = true;
+	auto begin = chrono::high_resolution_clock::now();
+
+	while (toggle) {
+
+		sockaddr_in sinRemote;
+		int nAddrSize = sizeof(sinRemote);
+		// Create a SOCKET for accepting incoming requests.
+		// Accept the connection.
+		SOCKET sd = accept(ServerSocket, (sockaddr*)&sinRemote, &nAddrSize);
+		if (sd != INVALID_SOCKET) {
+			cout << "Connection acceptee De : " <<
+				inet_ntoa(sinRemote.sin_addr) << ":" <<
+				ntohs(sinRemote.sin_port) << "." <<
+				endl;
+
+			DWORD nThreadID;
+			CreateThread(0, 0, EchoHandler, (void*)sd, 0, &nThreadID);
+		}
+		else {
+			cerr << WSAGetLastErrorMessage("Echec d'une connection.") <<
+				endl;
+			// return 1;
+		}
+
+		auto end = chrono::high_resolution_clock::now();
+		auto temps = std::chrono::duration_cast<std::chrono::seconds>(end - begin).count();
+		cout << temps << endl;
+		if (temps >= dureeSondage) { toggle = false; }
+		else { toggle = true; }
+	}
+
+
+	return 0;
+}
+
+
+int main(void) {
+
 	//----------------------
 	// Initialize Winsock.
 	WSADATA wsaData;
@@ -149,75 +247,52 @@ int main(void)
 	char* option = "1";
 	setsockopt(ServerSocket, SOL_SOCKET, SO_REUSEADDR, option, sizeof(option));
 
-	//----------------------
-	// The sockaddr_in structure specifies the address family,
-	// IP address, and port for the socket that is being bound.
-	int port = 5050;
+	char* adresseIP = new char[16];
+	int port;
+	int dureeSondage;
+	int fonction3;
 
-	//Recuperation de l'adresse locale
-	hostent *thisHost;
-	thisHost = gethostbyname("132.207.29.109");
-	char* ip;
-	ip = inet_ntoa(*(struct in_addr*) *thisHost->h_addr_list);
-	printf("Adresse locale trouvee %s : \n\n", ip);
-	sockaddr_in service;
-	service.sin_family = AF_INET;
-	//service.sin_addr.s_addr = inet_addr("127.0.0.1");
-	//	service.sin_addr.s_addr = INADDR_ANY;
-	//service.sin_addr.s_addr = inet_addr(ip);
-	service.sin_addr.s_addr = inet_addr("132.207.29.109");
-	service.sin_port = htons(port);
+	/*Fonction 1*/
+	//Saisie des paramètres du serveur(adresse IP, port d’écoute entre 6000 et 6050, durée du sondage)
+	saisirParametres(adresseIP, port, dureeSondage);
 
-	if (bind(ServerSocket, (SOCKADDR*)&service, sizeof(service)) == SOCKET_ERROR) {
-		cerr << WSAGetLastErrorMessage("bind() failed.") << endl;
-		closesocket(ServerSocket);
-		WSACleanup();
-		return 1;
-	}
-
-	//----------------------
-	// Listen for incoming connection requests.
-	// on the created socket
-	if (listen(ServerSocket, 30) == SOCKET_ERROR) {
-		cerr << WSAGetLastErrorMessage("Error listening on socket.") << endl;
-		closesocket(ServerSocket);
-		WSACleanup();
-		return 1;
-	}
+	/*Fonction 2*/
+	//• Saisie de la question du sondage(200 caractères maximum)
+	saisirQuestion();
 
 
-	printf("En attente des connections des clients sur le port %d...\n\n", ntohs(service.sin_port));
+	/*Fonction 3*/
+	//• Ouverture du sondage : À cette étape, le serveur se met en mode écoute sur le port sélectionné et
+	//lance le décompte du sondage
+	//• A chaque requête de connexion au port écouté, vérifier que le sondage est toujours actif.Si oui,
+	//transmettre la question, sinon notifier le client que le sondage est terminé.
+	fonction3 = ouvertureSondage(adresseIP, port, dureeSondage, ServerSocket);
+	if (fonction3 == 1) { return 1; }
 
-	while (true) {
+	/*Fonction 5*/
+	//• Recevoir les réponses des clients
 
-		sockaddr_in sinRemote;
-		int nAddrSize = sizeof(sinRemote);
-		// Create a SOCKET for accepting incoming requests.
-		// Accept the connection.
-		SOCKET sd = accept(ServerSocket, (sockaddr*)&sinRemote, &nAddrSize);
-		if (sd != INVALID_SOCKET) {
-			cout << "Connection acceptee De : " <<
-				inet_ntoa(sinRemote.sin_addr) << ":" <<
-				ntohs(sinRemote.sin_port) << "." <<
-				endl;
+	/*Fonction 6*/
+	//• Tenir un journal des réponses.Il s'agit d'un fichier nommé journal au format.txt édité par le
+	//serveur, qui comprend sur chaque ligne l’adresse IP, le port source et la réponse associée.
 
-			DWORD nThreadID;
-			CreateThread(0, 0, EchoHandler, (void*)sd, 0, &nThreadID);
-		}
-		else {
-			cerr << WSAGetLastErrorMessage("Echec d'une connection.") <<
-				endl;
-			// return 1;
-		}
-	}
+	/*Fonction 7*/
+	//• Fermeture du sondage : À l’expiration du temps alloué au sondage, les nouvelles connexions se
+	//voient notifier que le sondage est terminé.Les connexions encore en cours peuvent être soit
+	//poursuivie, soit coupées, selon votre préférence.)
+
+	/*Fonction 8*/
+	//• Afficher au cours de l’exécution les réponses reçues(adresse IP, port source, réponse)
+
+
 
 	// No longer need server socket
 	closesocket(ServerSocket);
 
 	WSACleanup();
+
 	return 0;
 }
-
 
 //// EchoHandler ///////////////////////////////////////////////////////
 // Handles the incoming data by reflecting it back to the sender.
@@ -227,15 +302,15 @@ DWORD WINAPI EchoHandler(void* sd_)
 	SOCKET sd = (SOCKET)sd_;
 
 	// Read Data from client
-	char readBuffer[10], outBuffer[10];
+	char readBuffer[300], outBuffer[200];
 	int readBytes;
 
-	readBytes = recv(sd, readBuffer, 7, 0);
+	readBytes = recv(sd, readBuffer, 300, 0);
 	if (readBytes > 0) {
 		cout << "Received " << readBytes << " bytes from client." << endl;
 		cout << "Received " << readBuffer << " from client." << endl;
-		DoSomething(readBuffer, outBuffer);
-		send(sd, outBuffer, 7, 0);
+		//DoSomething(readBuffer, outBuffer);
+		send(sd, question, 200, 0);
 	}
 	else if (readBytes == SOCKET_ERROR) {
 		cout << WSAGetLastErrorMessage("Echec de la reception !") << endl;
@@ -243,16 +318,4 @@ DWORD WINAPI EchoHandler(void* sd_)
 	closesocket(sd);
 
 	return 0;
-}
-// Do Something with the information
-void DoSomething(char *src, char *dest)
-{
-	for (int i = 0; i < 7; ++i) {
-		if (i % 2 == 0) {
-			dest[i] = toupper(src[i]);
-		}
-		else {
-			dest[i] = src[i];
-		}
-	}
 }

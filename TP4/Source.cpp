@@ -4,6 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include <strstream>
+#include <string>
 
 using namespace std;
 
@@ -125,7 +126,21 @@ const char* WSAGetLastErrorMessage(const char* pcMessagePrefix, int nErrorID = 0
 	return acErrorBuffer;
 }
 
-void fonction1() {}
+void parametersInput() { 
+	
+	string IPAddress;
+	cout << "Entrer IP adresse: " << endl;
+	getline(cin, IPAddress);
+
+	int port;
+	cout << "Entrer Port d'ecoute: " << endl;
+	cin >> port;
+
+	int dureeSondage;
+	cout << "Entre Duree Sondage: " << endl;
+	cin >> dureeSondage;
+
+}
 
 void fonction2() {}
 
@@ -138,6 +153,8 @@ void fonction5() {}
 void fonction6() {}
 
 void fonction7() {}
+
+void fonction8() {}
 
 
 int main(void) {
@@ -164,28 +181,14 @@ int main(void) {
 	char* option = "1";
 	setsockopt(ServerSocket, SOL_SOCKET, SO_REUSEADDR, option, sizeof(option));
 
-	/*Fonction 1*/
-	//• Saisie de la question du sondage(200 caractères maximum)
-	
-	/*Fonction 2*/
-	//• Ouverture du sondage : À cette étape, le serveur se met en mode écoute sur le port sélectionné et
-	//lance le décompte du sondage
-	
-	/*Fonction 3*/
-	//• A chaque requête de connexion au port écouté, vérifier que le sondage est toujours actif.Si oui,
-	//transmettre la question, sinon notifier le client que le sondage est terminé.
-		
-	/*Fonction 4*/
-	//• Recevoir les réponses des clients
-	
-	/*Fonction 5*/
-	//• Tenir un journal des réponses.Il s'agit d'un fichier nommé journal au format.txt édité par le
-	//serveur, qui comprend sur chaque ligne l’adresse IP, le port source et la réponse associée.
-		
-	/*Fonction 6*/
-	//• Fermeture du sondage : À l’expiration du temps alloué au sondage, les nouvelles connexions se
-	//voient notifier que le sondage est terminé.Les connexions encore en cours peuvent être soit
-	//poursuivie, soit coupées, selon votre préférence.)
-		/*Fonction 7*/	//• Afficher au cours de l’exécution les réponses reçues(adresse IP, port source, réponse)
-
+	/*Saisir au clavier l'adresse IP du serveur et le port sur lequel le serveur écoute.
+		• Vérifier la validité de l’adresse IP saisie(uniquement le format) et le numéro de port(entre 6000
+			et 6050)
+		• Se connecter au serveur.
+		• Réceptionner la question ou Afficher un message « Le sondage a expiré » selon la situation.
+		• Saisir une réponse(300 caractères maximum).
+		• Transmettre la réponse au serveur.
+		• Se déconnecter.
+*/
+	return 0;
 }

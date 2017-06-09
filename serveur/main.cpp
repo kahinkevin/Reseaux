@@ -1,5 +1,6 @@
 #undef UNICODE
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 
 #include <winsock2.h>
 #include <iostream>
@@ -133,27 +134,31 @@ const char* WSAGetLastErrorMessage(const char* pcMessagePrefix, int nErrorID = 0
 void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
 
 	char adresseIPTemp[16];
-	cout << "Entrer IP adresse: ";
+	cout << "Parametres du serveur" << endl << endl << "Entrer l'adresse IP du poste du serveur: ";
 	gets_s(adresseIPTemp);
 	for (size_t i = 0; i < sizeof(adresseIPTemp); i++) {
 		adresseIP[i] = adresseIPTemp[i];
 	}
+	// TODO: Verifier que l'entree est bien une adresse IP
 
-	cout << endl << "Entrer Port d'ecoute: ";
+	cout << endl << "Entrer le port d'ecoute (entre 6000 et 6050): ";
 	cin >> port;
+	// TODO: Verifier que le port d'ecoute est entre 6000 et 6050
 
-	cout << endl << "Entre Duree Sondage: ";
+	cout << endl << "Entrer la duree du sondage (en secondes): ";
 	cin >> dureeSondage;
+	// TODO: Verifier que la duree du sondage est un nombre
 
 }
 
 void saisirQuestion() {
 
 
-	cout << endl << "Entrer question: ";
+	cout << endl << "Entrer la question du sondage (maximum 200 caracteres): ";
 	cin.ignore();
 	gets_s(question);
 	cout << endl;
+	// TODO: Verifier la taille de la question (max 200)
 	
 }
 
@@ -185,7 +190,7 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 		return 1;
 	}
 
-	printf("En attente des connections des clients sur le port %d...\n\n", ntohs(service.sin_port));
+	printf("\nEn attente des connections des clients sur le port %d...\n\n", ntohs(service.sin_port));
 	bool toggle = true;
 	auto begin = chrono::high_resolution_clock::now();
 
@@ -196,26 +201,35 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 		// Create a SOCKET for accepting incoming requests.
 		// Accept the connection.
 		SOCKET sd = accept(ServerSocket, (sockaddr*)&sinRemote, &nAddrSize);
-		if (sd != INVALID_SOCKET) {
-			cout << "Connection acceptee De : " <<
-				inet_ntoa(sinRemote.sin_addr) << ":" <<
-				ntohs(sinRemote.sin_port) << "." <<
-				endl;
-
-			DWORD nThreadID;
-			CreateThread(0, 0, EchoHandler, (void*)sd, 0, &nThreadID);
-		}
-		else {
-			cerr << WSAGetLastErrorMessage("Echec d'une connection.") <<
-				endl;
-			// return 1;
-		}
-
+		
 		auto end = chrono::high_resolution_clock::now();
 		auto temps = std::chrono::duration_cast<std::chrono::seconds>(end - begin).count();
 		cout << temps << endl;
-		if (temps >= dureeSondage) { toggle = false; }
-		else { toggle = true; }
+		if (temps >= dureeSondage) { 
+			toggle = false; 
+			strcpy(question, "Desole, le sondage n'est plus disponible!"); 
+			cout << "Temps expire, sondage termine." << endl;
+			sd = shutdown(ServerSocket, 2);
+		}
+		else {
+			toggle = true;
+
+			if (sd != INVALID_SOCKET) {
+				cout << "Connection acceptee De : " <<
+					inet_ntoa(sinRemote.sin_addr) << ":" <<
+					ntohs(sinRemote.sin_port) << "." <<
+					endl;
+
+				DWORD nThreadID;
+				CreateThread(0, 0, EchoHandler, (void*)sd, 0, &nThreadID);
+			}
+			else {
+				cerr << WSAGetLastErrorMessage("Echec d'une connection.") <<
+					endl;
+				// return 1;
+			}
+
+		}
 	}
 
 
@@ -291,6 +305,9 @@ int main(void) {
 
 	WSACleanup();
 
+	std::cout << "Appuyer sur ENTER pour terminer...";
+	std::cin.ignore();
+
 	return 0;
 }
 
@@ -305,12 +322,14 @@ DWORD WINAPI EchoHandler(void* sd_)
 	char readBuffer[300], outBuffer[200];
 	int readBytes;
 
+	send(sd, question, 200, 0);
+
 	readBytes = recv(sd, readBuffer, 300, 0);
 	if (readBytes > 0) {
 		cout << "Received " << readBytes << " bytes from client." << endl;
 		cout << "Received " << readBuffer << " from client." << endl;
 		//DoSomething(readBuffer, outBuffer);
-		send(sd, question, 200, 0);
+		//send(sd, question, 200, 0);
 	}
 	else if (readBytes == SOCKET_ERROR) {
 		cout << WSAGetLastErrorMessage("Echec de la reception !") << endl;

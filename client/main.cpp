@@ -59,7 +59,12 @@ int __cdecl main(int argc, char **argv)
 	char hostAvantFinValide[2] = { '0', '2' };
 
 	bool ipValide = true;
-	do {
+
+	printf("Entrer l'adresse IP du serveur: ");
+	gets_s(host);
+	// TODO: Verifier que l'entree est bien une adresse IP
+
+	/*do {
 		printf("Entrer l'adresse IP complete du serveur (comprise entre 132.207.29.101 et 132.207.29.129): ");
 		gets_s(host);
 
@@ -77,12 +82,13 @@ int __cdecl main(int argc, char **argv)
 		else {//les autres cas (132.207.29.10x a 132.207.29.12x)
 			ipValide = hostAvantFinValide[0] <= host[avantFinHost] && host[avantFinHost] <= hostAvantFinValide[1];
 		}
-	} while (!ipValide);
+	} while (!ipValide);*/
 
 	char port[5];
 
-	cout << "Entrer le port (entre 6000 et 6050): " << endl;
+	cout << "\nEntrer le port d'ecoute (entre 6000 et 6050): ";
 	gets_s(port);
+	// TODO: Verifier que le port d'ecoute est entre 6000 et 6050
 
 	// getaddrinfo obtient l'adresse IP du host donné
 	iResult = getaddrinfo(host, port, &hints, &result);
@@ -111,7 +117,7 @@ int __cdecl main(int argc, char **argv)
 	sockaddr_in *adresse;
 	adresse = (struct sockaddr_in *) result->ai_addr;
 	//----------------------------------------------------
-	printf("Adresse trouvee pour le serveur %s : %s\n\n", host, inet_ntoa(adresse->sin_addr));
+	printf("\nAdresse trouvee pour le serveur %s : %s\n\n", host, inet_ntoa(adresse->sin_addr));
 	printf("Tentative de connexion au serveur %s avec le port %s\n\n", inet_ntoa(adresse->sin_addr), port);
 
 	// On va se connecter au serveur en utilisant l'adresse qui se trouve dans
@@ -129,13 +135,27 @@ int __cdecl main(int argc, char **argv)
 	printf("Connecte au serveur %s:%s\n\n", host, port);
 	freeaddrinfo(result);
 
+
+	//------------------------------
+	// On va recevoir la question du serveur
+	iResult = recv(leSocket, motRecu, 199, 0);
+	if (iResult > 0) {
+		printf("Nombre d'octets recus: %d\n", iResult);
+		motRecu[iResult] = '\0';
+		printf("Le mot recu est %*s\n", iResult, motRecu);
+	}
+	else {
+		printf("Erreur de reception : %d\n", WSAGetLastError());
+	}
+
 	//----------------------------
-	// Demander à l'usager un mot a envoyer au serveur
-	
+	// Demander à l'usager de repondre a la question
+	printf("Reponse a la question: ");
+	gets_s(motEnvoye);
 
 	//-----------------------------
-	// Envoyer le mot au serveur
-	iResult = send(leSocket, motEnvoye, 300, 0);
+	// Envoyer la reponse au serveur
+	iResult = send(leSocket, motEnvoye, 299, 0);
 	if (iResult == SOCKET_ERROR) {
 		printf("Erreur du send: %d\n", WSAGetLastError());
 		closesocket(leSocket);
@@ -147,22 +167,6 @@ int __cdecl main(int argc, char **argv)
 	}
 
 	printf("Nombre d'octets envoyes : %ld\n", iResult);
-
-	//------------------------------
-	// Maintenant, on va recevoir l' information envoyée par le serveur
-	iResult = recv(leSocket, motRecu, 200, 0);
-	if (iResult > 0) {
-		printf("Nombre d'octets recus: %d\n", iResult);
-		motRecu[iResult] = '\0';
-		printf("Le mot recu est %*s\n", iResult, motRecu);
-	}
-	else {
-		printf("Erreur de reception : %d\n", WSAGetLastError());
-	}
-
-	printf("Reponse a la question: ");
-	gets_s(motEnvoye);
-
 
 	// cleanup
 	closesocket(leSocket);

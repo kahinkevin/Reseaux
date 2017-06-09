@@ -1,4 +1,4 @@
 ﻿  main.cpp
-x:\inf3405\tp4\serveur\main.cpp(305): warning C4101: 'outBuffer' : variable locale non référencée
-  serveur.vcxproj -> X:\INF3405\TP4\serveur\Debug\serveur.exe
-  serveur.vcxproj -> X:\INF3405\TP4\serveur\Debug\serveur.pdb (Partial PDB)
+h:\polytechnique\inf3405\tp4\serveur\main.cpp(322): warning C4101: 'outBuffer': unreferenced local variable
+  serveur.vcxproj -> H:\Polytechnique\INF3405\TP4\serveur\Debug\serveur.exe
+  serveur.vcxproj -> H:\Polytechnique\INF3405\TP4\serveur\Debug\serveur.pdb (Partial PDB)

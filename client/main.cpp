@@ -49,20 +49,19 @@ int __cdecl main(int argc, char **argv)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;  // Protocole utilisé par le serveur
 
-									  // On indique le nom et le port du serveur auquel on veut se connecter
-									  //char *host = "L4708-XX";
-									  //char *host = "L4708-XX.lerb.polymtl.ca";
-									  //char *host = "add_IP locale";
+	// On indique le nom et le port du serveur auquel on veut se connecter
 	char host[16];
 
-	char ipDebut[12] = { '1', '3', '2', '.', '2', '0', '7', '.', '2', '9', '.', '1' }; //132.207.29.1
-	char hostAvantFinValide[2] = { '0', '2' };
+	//char ipDebut[12] = { '1', '3', '2', '.', '2', '0', '7', '.', '2', '9', '.', '1' }; //132.207.29.1
+	//char hostAvantFinValide[2] = { '0', '2' };
 
-	bool ipValide = true;
+	//bool ipValide = true;
 
+	// TODO: Verifier que l'entree est bien une adresse IP (VERIFIER LE FORMAT SEULEMENT)
+	/* Saisie de l'adresse IP du serveur */
 	printf("Entrer l'adresse IP du serveur: ");
 	gets_s(host);
-	// TODO: Verifier que l'entree est bien une adresse IP
+	
 
 	/*do {
 		printf("Entrer l'adresse IP complete du serveur (comprise entre 132.207.29.101 et 132.207.29.129): ");
@@ -86,9 +85,11 @@ int __cdecl main(int argc, char **argv)
 
 	char port[5];
 
+	// TODO: Verifier que le port d'ecoute est entre 6000 et 6050
+	/* Saisie du port d'ecoute */
 	cout << "\nEntrer le port d'ecoute (entre 6000 et 6050): ";
 	gets_s(port);
-	// TODO: Verifier que le port d'ecoute est entre 6000 et 6050
+	
 
 	// getaddrinfo obtient l'adresse IP du host donné
 	iResult = getaddrinfo(host, port, &hints, &result);
@@ -102,7 +103,6 @@ int __cdecl main(int argc, char **argv)
 	while ((result != NULL) && (result->ai_family != AF_INET))
 		result = result->ai_next;
 
-	//	if ((result != NULL) &&(result->ai_family==AF_INET)) result = result->ai_next;  
 
 	//-----------------------------------------
 	if (((result == NULL) || (result->ai_family != AF_INET))) {
@@ -140,9 +140,9 @@ int __cdecl main(int argc, char **argv)
 	// On va recevoir la question du serveur
 	iResult = recv(leSocket, motRecu, 199, 0);
 	if (iResult > 0) {
-		printf("Nombre d'octets recus: %d\n", iResult);
-		motRecu[iResult] = '\0';
-		printf("Le mot recu est %*s\n", iResult, motRecu);
+		//printf("Nombre d'octets recus: %d\n", iResult);
+		//motRecu[iResult] = '\0';
+		printf(motRecu);
 	}
 	else {
 		printf("Erreur de reception : %d\n", WSAGetLastError());
@@ -150,7 +150,7 @@ int __cdecl main(int argc, char **argv)
 
 	//----------------------------
 	// Demander à l'usager de repondre a la question
-	printf("Reponse a la question: ");
+	printf("\nReponse a la question: ");
 	gets_s(motEnvoye);
 
 	//-----------------------------
@@ -165,8 +165,9 @@ int __cdecl main(int argc, char **argv)
 
 		return 1;
 	}
+	else { printf("Message recu!"); }
 
-	printf("Nombre d'octets envoyes : %ld\n", iResult);
+	//printf("Nombre d'octets envoyes : %ld\n", iResult);
 
 	// cleanup
 	closesocket(leSocket);

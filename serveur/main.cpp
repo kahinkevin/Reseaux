@@ -8,6 +8,7 @@
 #include <strstream>
 #include <string>
 #include <chrono>
+#include <fstream>
 
 using namespace std;
 
@@ -16,9 +17,10 @@ using namespace std;
 
 // External functions
 extern DWORD WINAPI EchoHandler(void* sd_);
-//extern void DoSomething(char *src, char *dest);
 
+/* Variable globale */
 char question[200];
+string informations[2];
 
 // List of Winsock error constants mapped to an interpretation string.
 // Note that this list must remain sorted by the error constants'
@@ -131,35 +133,102 @@ const char* WSAGetLastErrorMessage(const char* pcMessagePrefix, int nErrorID = 0
 	return acErrorBuffer;
 }
 
+
+/*******************************************************************
+	Fonction: saisirParametres()
+
+	Paramètres:
+		adresseIP: Adresse IP du serveur
+		port: Port d'écoute du serveur
+		dureeSondage: Durée du sondage
+
+	Retour: Aucun
+
+	Description: S'occupe de saisir tous les paramètres du serveur
+		en demandant à l'utilisateur l'adresse IP du serveur, son
+		port d'écoute ainsi que la durée désirée du sondage.
+
+*******************************************************************/
 void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
 
+	// TODO: Verifier que l'entree est bien une adresse IP
 	char adresseIPTemp[16];
 	cout << "Parametres du serveur" << endl << endl << "Entrer l'adresse IP du poste du serveur: ";
 	gets_s(adresseIPTemp);
 	for (size_t i = 0; i < sizeof(adresseIPTemp); i++) {
 		adresseIP[i] = adresseIPTemp[i];
 	}
-	// TODO: Verifier que l'entree est bien une adresse IP
+	
+	// Tant que la valeur de port n'est pas entre 6000 et 6050...
+	while (port < 6000 || port > 6050) {
+		cout << endl << "Entrer le port d'ecoute (entre 6000 et 6050): ";
+		cin >> port;
+		// Verifie si la valeur entree est autre qu'un entier
+		while (cin.fail()) {
+			cout << endl << "Entrer le port d'ecoute (entre 6000 et 6050): ";
+			cin.clear();
+			cin.ignore(256, '\n');
+			cin >> port;
+		}
+	}
 
-	cout << endl << "Entrer le port d'ecoute (entre 6000 et 6050): ";
-	cin >> port;
-	// TODO: Verifier que le port d'ecoute est entre 6000 et 6050
-
-	cout << endl << "Entrer la duree du sondage (en secondes): ";
-	cin >> dureeSondage;
-	// TODO: Verifier que la duree du sondage est un nombre
-
+	// Tant que la valeur de la duree du sondage est nulle ou negative...
+	while (dureeSondage <= 0) {
+		cout << endl << "Entrer la duree du sondage (en secondes): ";
+		cin >> dureeSondage;
+		// Verifie si la valeur entree est autre qu'un entier
+		while (cin.fail()) {
+			cout << endl << "Entrer la duree du sondage (en secondes): ";	
+			cin.clear();
+			cin.ignore(256, '\n');
+			cin >> dureeSondage;
+		}
+	}
 }
 
+/*******************************************************************
+	Fonction: saisirQuestion()
+
+	Paramètres: Aucun
+
+	Retour: Aucun
+
+	Description: S'occupe de saisir la question du sondage que le
+		serveur emettra a tous les clients.
+
+*******************************************************************/
 void saisirQuestion() {
 
+	/* Initialisation des variables */
+	char questionTemp[1001];
+	bool toggle = false;
 
-	cout << endl << "Entrer la question du sondage (maximum 200 caracteres): ";
-	cin.ignore();
-	gets_s(question);
-	cout << endl;
-	// TODO: Verifier la taille de la question (max 200)
-	
+	/* Tant qu'une question valide n'est pas entree.. */
+	while (!toggle) {
+		cout << endl << "Entrer la question du sondage (maximum 200 caracteres): ";
+		cin.ignore();
+		gets_s(questionTemp);
+
+		// Trouver la longueur de la question
+		int index = 0;
+		// On cherche ou la question se termine (\0)
+		for (int i = 0; i < 1001; i++) {
+			if (questionTemp[i] == '\0') { index = i; break; }
+		}
+		// La position de \0 indique la longueur de la question
+		if (index < 200 && index > 0) {
+			for (int i = 0; i < index; i++) {
+				question[i] = questionTemp[i];
+			}
+			toggle = true;
+		}
+		else { 
+			// Si la longueur n'est pas respectee, on recommence..
+			cout << endl << "Question trop longue ou trop courte!"; 
+			toggle = false; 
+		}
+		cout << endl;
+	}	
 }
 
 int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerSocket) {
@@ -207,7 +276,7 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 		cout << temps << endl;
 		if (temps >= dureeSondage) { 
 			toggle = false; 
-			strcpy(question, "Desole, le sondage n'est plus disponible!"); 
+			strcpy(question, "Le sondage a expire!"); 
 			cout << "Temps expire, sondage termine." << endl;
 			sd = shutdown(ServerSocket, 2);
 		}
@@ -219,14 +288,14 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 					inet_ntoa(sinRemote.sin_addr) << ":" <<
 					ntohs(sinRemote.sin_port) << "." <<
 					endl;
-
+				informations[0] = inet_ntoa(sinRemote.sin_addr);
+				informations[1] = ntohs(sinRemote.sin_port);
 				DWORD nThreadID;
 				CreateThread(0, 0, EchoHandler, (void*)sd, 0, &nThreadID);
 			}
 			else {
 				cerr << WSAGetLastErrorMessage("Echec d'une connection.") <<
 					endl;
-				// return 1;
 			}
 
 		}
@@ -236,6 +305,11 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 	return 0;
 }
 
+void sauvegarderReponse(string reponse) {
+	ofstream writeFile;
+
+
+}
 
 int main(void) {
 
@@ -261,10 +335,11 @@ int main(void) {
 	char* option = "1";
 	setsockopt(ServerSocket, SOL_SOCKET, SO_REUSEADDR, option, sizeof(option));
 
+	/* Initialisation des variables */
 	char* adresseIP = new char[16];
-	int port;
-	int dureeSondage;
-	int fonction3;
+	int port = 0;
+	int dureeSondage = 0;
+	int fonction3 = 0;
 
 	/*Fonction 1*/
 	//Saisie des paramètres du serveur(adresse IP, port d’écoute entre 6000 et 6050, durée du sondage)
@@ -280,25 +355,11 @@ int main(void) {
 	//lance le décompte du sondage
 	//• A chaque requête de connexion au port écouté, vérifier que le sondage est toujours actif.Si oui,
 	//transmettre la question, sinon notifier le client que le sondage est terminé.
-	fonction3 = ouvertureSondage(adresseIP, port, dureeSondage, ServerSocket);
-	if (fonction3 == 1) { return 1; }
-
-	/*Fonction 5*/
 	//• Recevoir les réponses des clients
 
-	/*Fonction 6*/
-	//• Tenir un journal des réponses.Il s'agit d'un fichier nommé journal au format.txt édité par le
-	//serveur, qui comprend sur chaque ligne l’adresse IP, le port source et la réponse associée.
-
-	/*Fonction 7*/
-	//• Fermeture du sondage : À l’expiration du temps alloué au sondage, les nouvelles connexions se
-	//voient notifier que le sondage est terminé.Les connexions encore en cours peuvent être soit
-	//poursuivie, soit coupées, selon votre préférence.)
-
-	/*Fonction 8*/
-	//• Afficher au cours de l’exécution les réponses reçues(adresse IP, port source, réponse)
-
-
+	/* La variable fonction3 retourne 1 si une erreur s'est produite dans la fonction*/
+	fonction3 = ouvertureSondage(adresseIP, port, dureeSondage, ServerSocket);
+	if (fonction3 == 1) { return 1; }
 
 	// No longer need server socket
 	closesocket(ServerSocket);
@@ -325,11 +386,12 @@ DWORD WINAPI EchoHandler(void* sd_)
 	send(sd, question, 200, 0);
 
 	readBytes = recv(sd, readBuffer, 300, 0);
+	string reponse = readBuffer;
 	if (readBytes > 0) {
-		cout << "Received " << readBytes << " bytes from client." << endl;
-		cout << "Received " << readBuffer << " from client." << endl;
-		//DoSomething(readBuffer, outBuffer);
-		//send(sd, question, 200, 0);
+		cout << informations[0] << " : " << informations[1] << " - " << reponse << endl;
+		sauvegarderReponse(reponse);
+		informations[0].clear();
+		informations[1].clear();
 	}
 	else if (readBytes == SOCKET_ERROR) {
 		cout << WSAGetLastErrorMessage("Echec de la reception !") << endl;

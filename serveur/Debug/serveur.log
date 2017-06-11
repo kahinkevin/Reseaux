@@ -1,4 +1,5 @@
 ﻿  main.cpp
-h:\polytechnique\inf3405\tp4\serveur\main.cpp(390): warning C4101: 'outBuffer': unreferenced local variable
-  serveur.vcxproj -> H:\Polytechnique\INF3405\TP4\serveur\Debug\serveur.exe
-  serveur.vcxproj -> H:\Polytechnique\INF3405\TP4\serveur\Debug\serveur.pdb (Partial PDB)
+c:\users\kevin\documents\inf3405\reseaux\serveur\main.cpp(293): warning C4244: 'argument' : conversion de 'u_short' en 'char', perte possible de données
+c:\users\kevin\documents\inf3405\reseaux\serveur\main.cpp(385): warning C4101: 'outBuffer' : variable locale non référencée
+  serveur.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\serveur\Debug\serveur.exe
+  serveur.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\serveur\Debug\serveur.pdb (Partial PDB)

@@ -18,9 +18,10 @@ using namespace std;
 // External functions
 extern DWORD WINAPI EchoHandler(void* sd_);
 
-/* Variable globale */
+/* Variables globales */
 char question[200];
 string informations[2];
+//ofstream journal;
 
 // List of Winsock error constants mapped to an interpretation string.
 // Note that this list must remain sorted by the error constants'
@@ -160,7 +161,7 @@ void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
 	}
 	
 	// Tant que la valeur de port n'est pas entre 6000 et 6050...
-	while (port < 6000 || port > 6050) {
+	while (port < 6000 || 6050 < port) {
 		cout << endl << "Entrer le port d'ecoute (entre 6000 et 6050): ";
 		cin >> port;
 		// Verifie si la valeur entree est autre qu'un entier
@@ -216,7 +217,7 @@ void saisirQuestion() {
 			if (questionTemp[i] == '\0') { index = i; break; }
 		}
 		// La position de \0 indique la longueur de la question
-		if (index < 200 && index > 0) {
+		if (0 < index && index < 200) {
 			for (int i = 0; i < index; i++) {
 				question[i] = questionTemp[i];
 			}
@@ -285,7 +286,7 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 
 			if (sd != INVALID_SOCKET) {
 				cout << "Connection acceptee De : " <<
-					inet_ntoa(sinRemote.sin_addr) << ":" <<
+					inet_ntoa(sinRemote.sin_addr) << " : " <<
 					ntohs(sinRemote.sin_port) << "." <<
 					endl;
 				informations[0] = inet_ntoa(sinRemote.sin_addr);
@@ -306,9 +307,10 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 }
 
 void sauvegarderReponse(string reponse) {
-	ofstream writeFile;
-
-
+	ofstream journal;
+	journal.open("journal.txt", ios::app);
+	journal << informations[0] << " : "<< informations[1] << " - " << reponse << endl;
+	journal.close();
 }
 
 int main(void) {
@@ -361,12 +363,12 @@ int main(void) {
 	fonction3 = ouvertureSondage(adresseIP, port, dureeSondage, ServerSocket);
 	if (fonction3 == 1) { return 1; }
 
-	// No longer need server socket
+	// Fermer le socket lorsqu'il n'est plus utilisé
 	closesocket(ServerSocket);
 
 	WSACleanup();
 
-	std::cout << "Appuyer sur ENTER pour terminer...";
+	std::cout << "Appuyer sur ENTRER pour terminer...";
 	std::cin.ignore();
 
 	return 0;
@@ -390,6 +392,7 @@ DWORD WINAPI EchoHandler(void* sd_)
 	if (readBytes > 0) {
 		cout << informations[0] << " : " << informations[1] << " - " << reponse << endl;
 		sauvegarderReponse(reponse);
+
 		informations[0].clear();
 		informations[1].clear();
 	}

@@ -1,4 +1,2 @@
-﻿cl : Command line warning D9028: minimal rebuild failure, reverting to normal build
-  main.cpp
-  client.vcxproj -> H:\Polytechnique\INF3405\TP4\client\x64\Debug\client.exe
-  client.vcxproj -> H:\Polytechnique\INF3405\TP4\client\x64\Debug\client.pdb (Partial PDB)
+﻿  client.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\client\x64\Debug\client.exe
+  client.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\client\x64\Debug\client.pdb (Partial PDB)

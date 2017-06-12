@@ -458,12 +458,17 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 
 void sauvegarderReponse(string reponse) {
 	ofstream journal;
-	journal.open("journal.txt", ios::trunc);
+	journal.open("journal.txt", ios::app);
 	journal << informationsAdresse << " : "<< informationsPort << " - " << reponse << endl;
 	journal.close();
 }
 
 int main(void) {
+
+	// Efface le fichier journal pour stocker les reponses du nouveau sondage
+	ofstream resetJournal;
+	resetJournal.open("journal.txt", ios::trunc);
+	resetJournal.close();
 
 	//----------------------
 	// Initialize Winsock.

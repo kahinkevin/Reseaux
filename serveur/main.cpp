@@ -24,7 +24,9 @@ char question[200];
 string informations[2];
 
 /* Constantes globales */
-#define DELIMITEUR_IP "."
+#define DELIMITEUR_IP '.'
+#define N_DELIMITEUR_IP 3
+#define BASE_DIX 10
 #define	MINIMUM_OCTET_IP 0
 #define MAXIMUM_OCTET_IP 255
 
@@ -151,16 +153,12 @@ Description: Vérifie que l'octet est uniquement composé de chiffres.
 Source : http://www.geeksforgeeks.org/program-to-validate-an-ip-address/
 
 *******************************************************************/
-bool estNumerique(char* octetIP) {
-	//parcourir tout l'octet
-	while (*octetIP) {
-		if ('0' <= *octetIP && *octetIP <= '9') {
-			++octetIP;
-		}
-		else
-			return false;
-	}
-	return true;
+bool estCaractereException(char caractereIP) {
+	return (caractereIP < '0' || '9' < caractereIP);
+}
+
+bool estPoint(char caractereIP) {
+	return (caractereIP == DELIMITEUR_IP);
 }
 
 /*******************************************************************
@@ -172,86 +170,56 @@ Retour: vrai si l'adresse IP respecte le format IPv4, sinon faux
 
 Description: Vérifie que l'adresse IP passée en paramètre est valide
 (format uniquement)
-Source : http://www.geeksforgeeks.org/program-to-validate-an-ip-address/
-http://ideone.com/ZmUjeM
-
+Source : http://ideone.com/ZmUjeM
+10.150.133.133
 *******************************************************************/
-bool verifierFormatIP(char* adresseIPTemp) {
+bool estLongueurValide(size_t indexAdresseIP, size_t longueurAdresseIP) {
+	return (indexAdresseIP < longueurAdresseIP);
+}
+
+bool estFormatIP(char* adresseIPTemp) {
 	//IP invalide si l'adresse est nulle
 	if (adresseIPTemp == NULL) {
 		return false;
 	}
-	size_t dots = 0, indexAdresseIP = 0, longueurAdresseIP = strlen(adresseIPTemp);
-	while (indexAdresseIP < longueurAdresseIP) {
-		if (adresseIPTemp[indexAdresseIP] == '.') {
+
+
+	size_t nPoints = 0, indexAdresseIP = 0, longueurAdresseIP = strlen(adresseIPTemp);
+
+	while (estLongueurValide(indexAdresseIP, longueurAdresseIP)) {
+		//le premier caractère n'est pas un point
+		if (estPoint(adresseIPTemp[indexAdresseIP])) {
 			return false;
 		}
-		int num = 0;
-		while (indexAdresseIP < longueurAdresseIP && adresseIPTemp[indexAdresseIP] != '.') {
-			char c = adresseIPTemp[indexAdresseIP++];
-			if (c<'0' || c>'9') {
+		int octetIP = 0;
+		while (estLongueurValide(indexAdresseIP, longueurAdresseIP) && !estPoint(adresseIPTemp[indexAdresseIP])) {
+			char caractereIP = adresseIPTemp[indexAdresseIP++];
+			if (estCaractereException(caractereIP)) {
 				return false;
 			}
-			num = (num * 10) + (c - '0');
+			octetIP = (octetIP * BASE_DIX) + (caractereIP - '0');
 		}
-		if (indexAdresseIP < longueurAdresseIP)
-			++dots;
-		if (dots>3 || num<0 || num>255) {
+
+		//si la longueur est valide, continuer de vérifier l'adresse et augmenter le nombre de '.'
+		//rencontrés
+		if (estLongueurValide(indexAdresseIP, longueurAdresseIP)) {
+			++nPoints;
+		}
+		//permet notamment d'éliminer les cas tels que 132.207.x.y. et 132.256.x.y
+		if (N_DELIMITEUR_IP < nPoints || octetIP < MINIMUM_OCTET_IP || MAXIMUM_OCTET_IP < octetIP) {
 			return false;
 		}
+
+		//pour sauter le point à la fin de l'octet
 		++indexAdresseIP;
 	}
-	if (dots<3) {
+
+	//permet de rejeter les adresses n'ayant pas assez de points
+	if (nPoints < N_DELIMITEUR_IP) {
 		return false;
 	}
 	else {
 		return true;
-	}
-}
-bool verifierAdresseIP(char* adresseIPTemp) {
-	//IP invalide si l'adresse est nulle
-	if (adresseIPTemp == NULL) {
-		return false;
-	}
-
-	//Vérifier que le premier octet est bien extrait
-	char* octetIP = strtok(adresseIPTemp, DELIMITEUR_IP);
-	if (octetIP == NULL) {
-		return false;
-	}
-	cout << "taile : " << sizeof(octetIP) << endl;
-	int octetDecimal = 0, nPoints = 0;
-	while (octetIP != NULL) {
-
-		//Vérifier que l'octet ne contient que des chiffres de 0 à 9
-		if (!estNumerique(octetIP)) {
-			return false; 
-		}
-
-		//convertir l'octetIP en int pour faciliter les comparaisons
-		octetDecimal = atoi(octetIP);
-
-		//vérifie que l'octetIP est entre 0 et 255
-		if (MINIMUM_OCTET_IP <= octetDecimal && octetDecimal <= MAXIMUM_OCTET_IP) {
-			cout << "." << octetDecimal;
-			octetIP = strtok(NULL, DELIMITEUR_IP);
-			cout << "taile : " << octetIP << endl;
-			//extrait les octetIP suivants
-			if (octetIP != NULL) {
-				nPoints++;
-			}
-		}
-		else {
-			return false;
-		}		
-	}
-
-	//À la fin, vérifier que l'adresse complète possède 3 points
-	if (nPoints = 3) {
-		return true;
-	}
-	else {
-		return false;
 	}
 }
 
@@ -278,7 +246,7 @@ void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
 	do {
 		cout << endl << "Entrer l'adresse IP du poste du serveur: ";
 		gets_s(adresseIPTemp);
-	} while (!verifierFormatIP(adresseIPTemp));
+	} while (!estFormatIP(adresseIPTemp));
 	
 	//recopier l'adresse IP 
 	for (size_t i = 0; i < sizeof(adresseIPTemp); i++) {

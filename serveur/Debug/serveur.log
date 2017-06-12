@@ -1,5 +1,5 @@
 ﻿  main.cpp
-c:\users\kevin\documents\inf3405\reseaux\serveur\main.cpp(418): warning C4244: 'argument' : conversion de 'u_short' en 'char', perte possible de données
-c:\users\kevin\documents\inf3405\reseaux\serveur\main.cpp(510): warning C4101: 'outBuffer' : variable locale non référencée
+c:\users\kevin\documents\inf3405\reseaux\serveur\main.cpp(386): warning C4244: 'argument' : conversion de 'u_short' en 'char', perte possible de données
+c:\users\kevin\documents\inf3405\reseaux\serveur\main.cpp(478): warning C4101: 'outBuffer' : variable locale non référencée
   serveur.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\serveur\Debug\serveur.exe
   serveur.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\serveur\Debug\serveur.pdb (Partial PDB)

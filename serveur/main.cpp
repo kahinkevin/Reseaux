@@ -142,65 +142,121 @@ const char* WSAGetLastErrorMessage(const char* pcMessagePrefix, int nErrorID = 0
 }
 
 /*******************************************************************
-Fonction: estNumerique()
+	Fonction: estCaractereException()
 
-Paramètres: un octet (en format décimal) de l'adresse IP du serveur,
-entrée par l'utilisateur
+	Paramètres: 
+		caractereIP : caractere actuel lu pour verifier le format
+		IP
 
-Retour: vrai si l'octet ne contient que des chiffres, sinon faux
+	Retour: vrai si le caractere est en dehors de la plage de
+		caractères 0 et 9, sinon faux
 
-Description: Vérifie que l'octet est uniquement composé de chiffres.
-Source : http://www.geeksforgeeks.org/program-to-validate-an-ip-address/
-
+	Description: Vérifie que l'octet contient des caractères 
+		d'exception
 *******************************************************************/
 bool estCaractereException(char caractereIP) {
 	return (caractereIP < '0' || '9' < caractereIP);
 }
 
+/*******************************************************************
+	Fonction: estPoint()
+
+	Paramètres:
+		caractereIP : caractere actuel lu pour verifier le format IP
+
+	Retour: vrai si le caractere est un point, sinon faux
+
+	Description: Vérifie que l'octet est un point
+*******************************************************************/
 bool estPoint(char caractereIP) {
 	return (caractereIP == DELIMITEUR_IP);
 }
 
 /*******************************************************************
-Fonction: verifierAdresseIP()
+	Fonction: estLongueurValide()
 
-Paramètres: l'adresse IP du serveur entrée par l'utilisateur
+	Paramètres: 
+		indexAdresseIP : l'index du caractère lu actuellement
+		longueurAdresseIP : la longueur de l'adresse IP
 
-Retour: vrai si l'adresse IP respecte le format IPv4, sinon faux
+	Retour: vrai si l'adresse IP a une longueur valide, sinon faux
 
-Description: Vérifie que l'adresse IP passée en paramètre est valide
-(format uniquement)
-Source : http://ideone.com/ZmUjeM
-10.150.133.133
+	Description: Vérifie que l'adresse IP passée en paramètre a
+		une longueur valide, c'est-à-dire plus petite que sa longueur
+		totale
 *******************************************************************/
 bool estLongueurValide(size_t indexAdresseIP, size_t longueurAdresseIP) {
 	return (indexAdresseIP < longueurAdresseIP);
 }
 
+/*******************************************************************
+	Fonction: extraireOctetIP()
+
+	Paramètres:
+		octetIP (par référence) : l'octet IP en type size_t
+		indexAdresseIP (par référence) : l'index du caractère 
+			lu actuellement
+		longueurAdresseIP : la longueur de l'adresse IP
+		adresseIPTemp : adresse IP à vérifier, entrée par 
+			l'utilisateur
+
+	Retour: vrai si l'octet IP est valide, sinon faux
+
+	Description: Convertit un octet IP de type char en size_t
+*******************************************************************/
+bool extraireOctetIP(size_t& octetIP, size_t& indexAdresseIP, size_t longueurAdresseIP, const char* adresseIPTemp) {
+	//parcourir l'octetIP jusqu'au point
+	while (estLongueurValide(indexAdresseIP, longueurAdresseIP) && !estPoint(adresseIPTemp[indexAdresseIP])) {
+		char caractereActuel = adresseIPTemp[indexAdresseIP++];
+
+		//permet de rejeter les lettres ou d'autres caracteres qui ne sont pas des chiffres
+		if (estCaractereException(caractereActuel)) {
+			return false;
+		}
+
+		//permet de décaler les chiffres lus vers la gauche, tout en convertissant le char en size_t
+		octetIP = (octetIP * BASE_DIX) + (caractereActuel - '0');
+	}
+}
+
+/*******************************************************************
+	Fonction: estFormatIP()
+
+	Paramètres: 
+		adresseIPTemp : l'adresse IP du serveur entrée par 
+		l'utilisateur
+
+	Retour: vrai si l'adresse IP respecte le format IPv4, sinon 
+		faux
+
+	Description: Vérifie que l'adresse IP passée en paramètre est
+		valide (format uniquement). 
+		rejete les adresses dépassant le nombre de points, les
+		caractères qui ne sont pas des chiffres, les longueurs
+		invalides, etc.
+
+	Source : http://ideone.com/ZmUjeM
+*******************************************************************/
 bool estFormatIP(char* adresseIPTemp) {
 	//IP invalide si l'adresse est nulle
 	if (adresseIPTemp == NULL) {
 		return false;
 	}
 
-
-	size_t nPoints = 0, indexAdresseIP = 0, longueurAdresseIP = strlen(adresseIPTemp);
+	size_t nPoints = 0, indexAdresseIP = 0;
+	const size_t longueurAdresseIP = strlen(adresseIPTemp);
 
 	while (estLongueurValide(indexAdresseIP, longueurAdresseIP)) {
 		//le premier caractère n'est pas un point
 		if (estPoint(adresseIPTemp[indexAdresseIP])) {
 			return false;
 		}
-		int octetIP = 0;
-		while (estLongueurValide(indexAdresseIP, longueurAdresseIP) && !estPoint(adresseIPTemp[indexAdresseIP])) {
-			char caractereIP = adresseIPTemp[indexAdresseIP++];
-			if (estCaractereException(caractereIP)) {
-				return false;
-			}
-			octetIP = (octetIP * BASE_DIX) + (caractereIP - '0');
-		}
 
-		//si la longueur est valide, continuer de vérifier l'adresse et augmenter le nombre de '.'
+		//extraire un octet IP
+		size_t octetIP = 0;
+		extraireOctetIP(octetIP, indexAdresseIP, longueurAdresseIP, adresseIPTemp);
+
+		//si la longueur est toujours valide, continuer de vérifier l'adresse et augmenter le nombre de '.'
 		//rencontrés
 		if (estLongueurValide(indexAdresseIP, longueurAdresseIP)) {
 			++nPoints;

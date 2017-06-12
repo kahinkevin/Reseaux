@@ -21,7 +21,8 @@ extern DWORD WINAPI EchoHandler(void* sd_);
 
 /* Variables globales */
 char question[200];
-string informations[2];
+string informationsAdresse;
+int informationsPort;
 
 /* Constantes globales */
 #define DELIMITEUR_IP '.'
@@ -438,8 +439,8 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 					inet_ntoa(sinRemote.sin_addr) << " : " <<
 					ntohs(sinRemote.sin_port) << "." <<
 					endl;
-				informations[0] = inet_ntoa(sinRemote.sin_addr);
-				informations[1] = ntohs(sinRemote.sin_port);
+				informationsAdresse = inet_ntoa(sinRemote.sin_addr);
+				informationsPort = ntohs(sinRemote.sin_port);
 				DWORD nThreadID;
 				CreateThread(0, 0, EchoHandler, (void*)sd, 0, &nThreadID);
 			}
@@ -457,8 +458,8 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 
 void sauvegarderReponse(string reponse) {
 	ofstream journal;
-	journal.open("journal.txt", ios::app);
-	journal << informations[0] << " : "<< informations[1] << " - " << reponse << endl;
+	journal.open("journal.txt", ios::trunc);
+	journal << informationsAdresse << " : "<< informationsPort << " - " << reponse << endl;
 	journal.close();
 }
 
@@ -539,11 +540,11 @@ DWORD WINAPI EchoHandler(void* sd_)
 	readBytes = recv(sd, readBuffer, 300, 0);
 	string reponse = readBuffer;
 	if (readBytes > 0) {
-		cout << informations[0] << " : " << informations[1] << " - " << reponse << endl;
+		cout << informationsAdresse << " : " << informationsPort << " - " << reponse << endl;
 		sauvegarderReponse(reponse);
-
-		informations[0].clear();
-		informations[1].clear();
+		string test1 = informationsAdresse;
+		int test2 = informationsPort;
+		informationsAdresse.clear();
 	}
 	else if (readBytes == SOCKET_ERROR) {
 		cout << WSAGetLastErrorMessage("Echec de la reception !") << endl;

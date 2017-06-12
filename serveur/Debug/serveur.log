@@ -1,2 +1,9 @@
+<<<<<<< HEAD
 ﻿  serveur.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\serveur\Debug\serveur.exe
   serveur.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\serveur\Debug\serveur.pdb (Partial PDB)
+=======
+﻿  main.cpp
+h:\polytechnique\inf3405\tp4\serveur\main.cpp(479): warning C4101: 'outBuffer': unreferenced local variable
+  serveur.vcxproj -> H:\Polytechnique\INF3405\TP4\serveur\Debug\serveur.exe
+  serveur.vcxproj -> H:\Polytechnique\INF3405\TP4\serveur\Debug\serveur.pdb (Partial PDB)
+>>>>>>> a6a48ecaf3b794cf8632b8a0eadcfb83893aef7a

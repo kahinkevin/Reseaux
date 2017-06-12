@@ -10,6 +10,7 @@
 #include <chrono>
 #include <fstream>
 
+
 using namespace std;
 
 // link with Ws2_32.lib
@@ -152,10 +153,15 @@ const char* WSAGetLastErrorMessage(const char* pcMessagePrefix, int nErrorID = 0
 *******************************************************************/
 void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
 
-	// TODO: Verifier que l'entree est bien une adresse IP
 	char adresseIPTemp[16];
-	cout << "Parametres du serveur" << endl << endl << "Entrer l'adresse IP du poste du serveur: ";
-	gets_s(adresseIPTemp);
+
+	// TODO: Verifier que l'entree est bien une adresse IP
+	do {
+		cout << "Parametres du serveur" << endl << endl << "Entrer l'adresse IP du poste du serveur: ";
+		gets_s(adresseIPTemp);
+	} while (verifierAdresseIP());
+	
+	//recopier l'adresse IP 
 	for (size_t i = 0; i < sizeof(adresseIPTemp); i++) {
 		adresseIP[i] = adresseIPTemp[i];
 	}
@@ -185,6 +191,21 @@ void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
 			cin >> dureeSondage;
 		}
 	}
+}
+
+/*******************************************************************
+Fonction: saisirQuestion()
+
+Paramètres: Aucun
+
+Retour: Aucun
+
+Description: S'occupe de saisir la question du sondage que le
+serveur emettra a tous les clients.
+
+*******************************************************************/
+bool verifierAdresseIP() {
+	
 }
 
 /*******************************************************************

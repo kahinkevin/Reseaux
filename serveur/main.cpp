@@ -22,7 +22,11 @@ extern DWORD WINAPI EchoHandler(void* sd_);
 /* Variables globales */
 char question[200];
 string informations[2];
-//ofstream journal;
+
+/* Constantes globales */
+#define DELIMITEUR_IP "."
+#define	MINIMUM_OCTET_IP 0
+#define MAXIMUM_OCTET_IP 255
 
 // List of Winsock error constants mapped to an interpretation string.
 // Note that this list must remain sorted by the error constants'
@@ -135,6 +139,121 @@ const char* WSAGetLastErrorMessage(const char* pcMessagePrefix, int nErrorID = 0
 	return acErrorBuffer;
 }
 
+/*******************************************************************
+Fonction: estNumerique()
+
+Paramètres: un octet (en format décimal) de l'adresse IP du serveur,
+entrée par l'utilisateur
+
+Retour: vrai si l'octet ne contient que des chiffres, sinon faux
+
+Description: Vérifie que l'octet est uniquement composé de chiffres.
+Source : http://www.geeksforgeeks.org/program-to-validate-an-ip-address/
+
+*******************************************************************/
+bool estNumerique(char* octetIP) {
+	//parcourir tout l'octet
+	while (*octetIP) {
+		if ('0' <= *octetIP && *octetIP <= '9') {
+			++octetIP;
+		}
+		else
+			return false;
+	}
+	return true;
+}
+
+/*******************************************************************
+Fonction: verifierAdresseIP()
+
+Paramètres: l'adresse IP du serveur entrée par l'utilisateur
+
+Retour: vrai si l'adresse IP respecte le format IPv4, sinon faux
+
+Description: Vérifie que l'adresse IP passée en paramètre est valide
+(format uniquement)
+Source : http://www.geeksforgeeks.org/program-to-validate-an-ip-address/
+http://ideone.com/ZmUjeM
+
+*******************************************************************/
+bool verifierFormatIP(char* adresseIPTemp) {
+	//IP invalide si l'adresse est nulle
+	if (adresseIPTemp == NULL) {
+		return false;
+	}
+	size_t dots = 0, indexAdresseIP = 0, longueurAdresseIP = strlen(adresseIPTemp);
+	while (indexAdresseIP < longueurAdresseIP) {
+		if (adresseIPTemp[indexAdresseIP] == '.') {
+			return false;
+		}
+		int num = 0;
+		while (indexAdresseIP < longueurAdresseIP && adresseIPTemp[indexAdresseIP] != '.') {
+			char c = adresseIPTemp[indexAdresseIP++];
+			if (c<'0' || c>'9') {
+				return false;
+			}
+			num = (num * 10) + (c - '0');
+		}
+		if (indexAdresseIP < longueurAdresseIP)
+			++dots;
+		if (dots>3 || num<0 || num>255) {
+			return false;
+		}
+		++indexAdresseIP;
+	}
+	if (dots<3) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+bool verifierAdresseIP(char* adresseIPTemp) {
+	//IP invalide si l'adresse est nulle
+	if (adresseIPTemp == NULL) {
+		return false;
+	}
+
+	//Vérifier que le premier octet est bien extrait
+	char* octetIP = strtok(adresseIPTemp, DELIMITEUR_IP);
+	if (octetIP == NULL) {
+		return false;
+	}
+	cout << "taile : " << sizeof(octetIP) << endl;
+	int octetDecimal = 0, nPoints = 0;
+	while (octetIP != NULL) {
+
+		//Vérifier que l'octet ne contient que des chiffres de 0 à 9
+		if (!estNumerique(octetIP)) {
+			return false; 
+		}
+
+		//convertir l'octetIP en int pour faciliter les comparaisons
+		octetDecimal = atoi(octetIP);
+
+		//vérifie que l'octetIP est entre 0 et 255
+		if (MINIMUM_OCTET_IP <= octetDecimal && octetDecimal <= MAXIMUM_OCTET_IP) {
+			cout << "." << octetDecimal;
+			octetIP = strtok(NULL, DELIMITEUR_IP);
+			cout << "taile : " << octetIP << endl;
+			//extrait les octetIP suivants
+			if (octetIP != NULL) {
+				nPoints++;
+			}
+		}
+		else {
+			return false;
+		}		
+	}
+
+	//À la fin, vérifier que l'adresse complète possède 3 points
+	if (nPoints = 3) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
 
 /*******************************************************************
 	Fonction: saisirParametres()
@@ -154,12 +273,12 @@ const char* WSAGetLastErrorMessage(const char* pcMessagePrefix, int nErrorID = 0
 void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
 
 	char adresseIPTemp[16];
+	cout << "Parametres du serveur" << endl;
 
-	// TODO: Verifier que l'entree est bien une adresse IP
 	do {
-		cout << "Parametres du serveur" << endl << endl << "Entrer l'adresse IP du poste du serveur: ";
+		cout << endl << "Entrer l'adresse IP du poste du serveur: ";
 		gets_s(adresseIPTemp);
-	} while (verifierAdresseIP());
+	} while (!verifierFormatIP(adresseIPTemp));
 	
 	//recopier l'adresse IP 
 	for (size_t i = 0; i < sizeof(adresseIPTemp); i++) {
@@ -191,21 +310,6 @@ void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
 			cin >> dureeSondage;
 		}
 	}
-}
-
-/*******************************************************************
-Fonction: saisirQuestion()
-
-Paramètres: Aucun
-
-Retour: Aucun
-
-Description: S'occupe de saisir la question du sondage que le
-serveur emettra a tous les clients.
-
-*******************************************************************/
-bool verifierAdresseIP() {
-	
 }
 
 /*******************************************************************

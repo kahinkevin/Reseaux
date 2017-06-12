@@ -12,6 +12,13 @@
 // Link avec ws2_32.lib
 #pragma comment(lib, "ws2_32.lib")
 
+/* Constantes globales */
+#define DELIMITEUR_IP '.'
+#define N_DELIMITEUR_IP 3
+#define BASE_DIX 10
+#define	MINIMUM_OCTET_IP 0
+#define MAXIMUM_OCTET_IP 255
+
 using namespace std;
 
 int __cdecl main(int argc, char **argv)
@@ -52,36 +59,10 @@ int __cdecl main(int argc, char **argv)
 	// On indique le nom et le port du serveur auquel on veut se connecter
 	char host[16];
 
-	//char ipDebut[12] = { '1', '3', '2', '.', '2', '0', '7', '.', '2', '9', '.', '1' }; //132.207.29.1
-	//char hostAvantFinValide[2] = { '0', '2' };
-
-	//bool ipValide = true;
-
-	// TODO: Verifier que l'entree est bien une adresse IP (VERIFIER LE FORMAT SEULEMENT)
 	/* Saisie de l'adresse IP du serveur */
 	printf("Entrer l'adresse IP du serveur: ");
 	gets_s(host);
-	
 
-	/*do {
-		printf("Entrer l'adresse IP complete du serveur (comprise entre 132.207.29.101 et 132.207.29.129): ");
-		gets_s(host);
-
-		size_t avantFinHost = 12, finHost = 13;
-
-		//verifier que les 12 premiers caracteres sont valides : ils doivent etre 132.207.29.1
-		for (size_t i = 0; i < sizeof(ipDebut) && ipValide; i++) {
-			ipValide = host[i] == ipDebut[i];
-		}
-
-		//verifier que le quatrieme octet est entre 101 et 129
-		if (host[avantFinHost] == hostAvantFinValide[0] && host[finHost] == '0') { //si c'est 132.207.29.100 
-			ipValide = false;
-		}
-		else {//les autres cas (132.207.29.10x a 132.207.29.12x)
-			ipValide = hostAvantFinValide[0] <= host[avantFinHost] && host[avantFinHost] <= hostAvantFinValide[1];
-		}
-	} while (!ipValide);*/
 
 	char port[5];
 

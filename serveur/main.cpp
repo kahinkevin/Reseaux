@@ -305,7 +305,7 @@ void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
 		gets_s(adresseIPTemp);
 	} while (!estFormatIP(adresseIPTemp));
 	
-	//recopier l'adresse IP 
+	//recopier l'adresse IP validée
 	for (size_t i = 0; i < sizeof(adresseIPTemp); i++) {
 		adresseIP[i] = adresseIPTemp[i];
 	}

@@ -1,0 +1,5 @@
+﻿  main.cpp
+c:\users\kevin\documents\inf3405\reseaux\client\main.cpp(26): warning C4005: 'MAXIMUM_OCTET_IP' : redéfinition de macro
+  c:\users\kevin\documents\inf3405\reseaux\client\main.cpp(20): note: voir la définition précédente de 'MAXIMUM_OCTET_IP'
+  client.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\client\Debug\client.exe
+  client.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\client\Debug\client.pdb (Partial PDB)

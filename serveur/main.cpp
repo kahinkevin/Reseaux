@@ -382,7 +382,23 @@ void saisirQuestion() {
 	}	
 }
 
+/*******************************************************************
+	Fonction: ouvertureSondage()
+
+	Paramètres:
+		adresseIP:		l'adresse IP du serveur
+		port:			le port d'ecoute
+		dureeSondage:	la duree du sondage
+		ServerSocket:	le socket utilise pour la communication avec client
+
+	Retour: Aucun
+
+	Description: Nombre entier signifiant s'il y a eu une erreur ou non.
+
+*******************************************************************/
 int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerSocket) {
+
+	printf("\n\nOuverture du sondage\n");
 
 	hostent *thisHost;
 	thisHost = gethostbyname(adresseIP);
@@ -424,7 +440,7 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 		
 		auto end = chrono::high_resolution_clock::now();
 		auto temps = std::chrono::duration_cast<std::chrono::seconds>(end - begin).count();
-		cout << temps << endl;
+		
 		if (temps >= dureeSondage) { 
 			toggle = false; 
 			strcpy(question, "Le sondage a expire!"); 
@@ -448,11 +464,8 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 				cerr << WSAGetLastErrorMessage("Echec d'une connection.") <<
 					endl;
 			}
-
 		}
 	}
-
-
 	return 0;
 }
 

@@ -123,6 +123,7 @@ int __cdecl main(int argc, char **argv)
 	if (iResult > 0) {
 		//printf("Nombre d'octets recus: %d\n", iResult);
 		//motRecu[iResult] = '\0';
+		printf("Question: ");
 		printf(motRecu);
 	}
 	else {
@@ -146,7 +147,7 @@ int __cdecl main(int argc, char **argv)
 
 		return 1;
 	}
-	else { printf("Message recu!"); }
+	else { printf("Message recu! "); }
 
 	//printf("Nombre d'octets envoyes : %ld\n", iResult);
 

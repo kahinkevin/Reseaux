@@ -1,5 +1,2 @@
-﻿  main.cpp
-h:\polytechnique\inf3405\tp4\serveur\main.cpp(553): warning C4101: 'outBuffer': unreferenced local variable
-h:\polytechnique\inf3405\tp4\serveur\main.cpp(221): warning C4715: 'extraireOctetIP': not all control paths return a value
-  serveur.vcxproj -> H:\Polytechnique\INF3405\TP4\serveur\Debug\serveur.exe
-  serveur.vcxproj -> H:\Polytechnique\INF3405\TP4\serveur\Debug\serveur.pdb (Partial PDB)
+﻿  serveur.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\serveur\Debug\serveur.exe
+  serveur.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\serveur\Debug\serveur.pdb (Partial PDB)

@@ -1,3 +1,2 @@
 ﻿  main.cpp
-  client.vcxproj -> H:\Polytechnique\INF3405\TP4\client\x64\Debug\client.exe
-  client.vcxproj -> H:\Polytechnique\INF3405\TP4\client\x64\Debug\client.pdb (Partial PDB)
+c1xx : fatal error C1048: option 'L' inconnue dans '-ZILP448'

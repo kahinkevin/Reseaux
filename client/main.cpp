@@ -19,6 +19,12 @@
 #define	MINIMUM_OCTET_IP 0
 #define MAXIMUM_OCTET_IP 255
 
+//PORT : (Utilisation de caractères dans le client, car getaddrinfo)
+#define INDICE_AVANT_FIN_PORT 2
+#define INDICE_FIN_PORT 3
+#define	MINIMUM_PORT 6000
+#define MAXIMUM_OCTET_IP 6050
+
 using namespace std;
 
 int __cdecl main(int argc, char **argv)

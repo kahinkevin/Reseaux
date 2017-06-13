@@ -19,12 +19,9 @@ using namespace std;
 // External functions
 extern DWORD WINAPI EchoHandler(void* sd_);
 
-/* Variables globales */
-char question[200];
-string informationsAdresse;
-int informationsPort;
-
 /* Constantes globales */
+
+// IP :
 #define DELIMITEUR_IP '.'
 #define N_DELIMITEUR_IP 3
 #define	MINIMUM_OCTET_IP 0
@@ -32,8 +29,20 @@ int informationsPort;
 #define LONGUEUR_ADRESSE_IP 16
 #define BASE_DIX 10
 
+//PORT :
 #define PORT_MINIMUM 6000
 #define	PORT_MAXIMUM 6050
+
+//SONDAGE :
+#define TAILLE_QUESTION 200
+#define TAILLE_MOT_RECU 199
+#define TAILLE_REPONSE 300
+#define TAILLE_MOT_ENVOYE 299
+
+/* Variables globales */
+char question[TAILLE_QUESTION];
+string informationsAdresse;
+int informationsPort;
 
 // List of Winsock error constants mapped to an interpretation string.
 // Note that this list must remain sorted by the error constants'
@@ -209,7 +218,8 @@ bool estLongueurValide(size_t indexAdresseIP, size_t longueurAdresseIP) {
 
 	Description: Convertit un octet IP de type char en size_t
 *******************************************************************/
-bool extraireOctetIP(size_t& octetIP, size_t& indexAdresseIP, size_t longueurAdresseIP, const char* adresseIPTemp) {
+bool extraireOctetIP(size_t& octetIP, size_t& indexAdresseIP, size_t longueurAdresseIP, 
+	const char* adresseIPTemp) {
 	//parcourir l'octetIP jusqu'au point
 	while (estLongueurValide(indexAdresseIP, longueurAdresseIP) && !estPoint(adresseIPTemp[indexAdresseIP])) {
 		char caractereActuel = adresseIPTemp[indexAdresseIP++];
@@ -356,7 +366,8 @@ void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
 void saisirQuestion() {
 
 	/* Initialisation des variables */
-	char questionTemp[1001];
+	const int tailleQuestionTemp = 1001;
+	char questionTemp[tailleQuestionTemp];
 	bool toggle = false;
 
 	/* Tant qu'une question valide n'est pas entree.. */
@@ -368,11 +379,11 @@ void saisirQuestion() {
 		// Trouver la longueur de la question
 		int index = 0;
 		// On cherche ou la question se termine (\0)
-		for (int i = 0; i < 1001; i++) {
+		for (int i = 0; i < tailleQuestionTemp; i++) {
 			if (questionTemp[i] == '\0') { index = i; break; }
 		}
 		// La position de \0 indique la longueur de la question
-		if (0 < index && index < 200) {
+		if (0 < index && index < TAILLE_QUESTION) {
 			for (int i = 0; i < index; i++) {
 				question[i] = questionTemp[i];
 			}
@@ -476,6 +487,18 @@ int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerS
 	return 0;
 }
 
+/*******************************************************************
+	Fonction: sauvegarderReponse()
+
+	Paramètres:
+		reponse:		le message reponse du client
+
+	Retour: Aucun
+
+	Description: Recoit la reponse du client en parametre pour
+		la consigner dans journal.txt
+
+*******************************************************************/
 void sauvegarderReponse(string reponse) {
 	ofstream journal;
 	journal.open("journal.txt", ios::app);
@@ -483,12 +506,27 @@ void sauvegarderReponse(string reponse) {
 	journal.close();
 }
 
+/*******************************************************************
+	Fonction: reinitialiserJournal()()
+
+	Paramètres: Aucun
+
+	Retour: Aucun
+
+	Description: Efface le journal pour stocker uniquement
+		les reponses du nouveau sondage
+
+*******************************************************************/
+void reinitialiserJournal() {
+	ofstream journalReinitialise;
+	journalReinitialise.open("journal.txt", ios::trunc);
+	journalReinitialise.close();
+}
+
 int main(void) {
 
 	// Efface le fichier journal pour stocker les reponses du nouveau sondage
-	ofstream resetJournal;
-	resetJournal.open("journal.txt", ios::trunc);
-	resetJournal.close();
+	reinitialiserJournal();
 
 	//----------------------
 	// Initialize Winsock.
@@ -541,12 +579,12 @@ int main(void) {
 	// Fermer le socket lorsqu'il n'est plus utilisé
 	closesocket(ServerSocket);
 
+	// libération des variables
 	WSACleanup();
+	delete[] adresseIP;
 
 	std::cout << "Appuyer sur ENTRER pour terminer...";
 	std::cin.ignore();
-	
-	delete adresseIP;
 
 	return 0;
 }
@@ -559,12 +597,12 @@ DWORD WINAPI EchoHandler(void* sd_)
 	SOCKET sd = (SOCKET)sd_;
 
 	// Read Data from client
-	char readBuffer[300], outBuffer[200];
+	char readBuffer[TAILLE_REPONSE], outBuffer[TAILLE_QUESTION];
 	int readBytes;
 
-	send(sd, question, 200, 0);
+	send(sd, question, TAILLE_QUESTION, 0);
 
-	readBytes = recv(sd, readBuffer, 300, 0);
+	readBytes = recv(sd, readBuffer, TAILLE_REPONSE, 0);
 	string reponse = readBuffer;
 	if (readBytes > 0) {
 		cout << informationsAdresse << " : " << informationsPort << " - " << reponse << endl;

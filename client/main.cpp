@@ -13,6 +13,7 @@
 #pragma comment(lib, "ws2_32.lib")
 
 /* Constantes globales */
+//IP :
 #define DELIMITEUR_IP '.'
 #define N_DELIMITEUR_IP 3
 #define LONGUEUR_ADRESSE_IP 16
@@ -25,60 +26,76 @@
 #define INDICE_FIN_PORT 3
 #define LONGUEUR_PORT 5
 
+//SONDAGE :
+#define TAILLE_QUESTION 200
+#define TAILLE_MOT_RECU 199
+#define TAILLE_REPONSE 300
+#define TAILLE_MOT_ENVOYE 299
+
 using namespace std;
 
 /*******************************************************************
-Fonction: estCaractereException()
-Paramètres:
-caractereIP : caractere actuel lu pour verifier le format
-IP
-Retour: vrai si le caractere est en dehors de la plage de
-caractères 0 et 9, sinon faux
-Description: Vérifie que l'octet contient des caractères
-d'exception
+	Fonction: estCaractereException()
+	Paramètres:
+		caractereIP : caractere actuel lu pour verifier le format
+		IP
+	Retour: vrai si le caractere est en dehors de la plage de
+		caractères 0 et 9, sinon faux
+	Description: Vérifie que l'octet contient des caractères
+		d'exception
 *******************************************************************/
 bool estCaractereException(char caractereIP) {
 	return (caractereIP < '0' || '9' < caractereIP);
 }
 
 /*******************************************************************
-Fonction: estPoint()
-Paramètres:
-caractereIP : caractere actuel lu pour verifier le format IP
-Retour: vrai si le caractere est un point, sinon faux
-Description: Vérifie que l'octet est un point
+	Fonction: estPoint()
+
+	Paramètres:
+		caractereIP : caractere actuel lu pour verifier le format IP
+
+	Retour: vrai si le caractere est un point, sinon faux
+
+	Description: Vérifie que l'octet est un point
 *******************************************************************/
 bool estPoint(char caractereIP) {
 	return (caractereIP == DELIMITEUR_IP);
 }
 
 /*******************************************************************
-Fonction: estLongueurValide()
-Paramètres:
-indexAdresseIP : l'index du caractère lu actuellement
-longueurAdresseIP : la longueur de l'adresse IP
-Retour: vrai si l'adresse IP a une longueur valide, sinon faux
-Description: Vérifie que l'adresse IP passée en paramètre a
-une longueur valide, c'est-à-dire plus petite que sa longueur
-totale
+	Fonction: estLongueurValide()
+
+	Paramètres:
+		indexAdresseIP : l'index du caractère lu actuellement
+		longueurAdresseIP : la longueur de l'adresse IP
+
+	Retour: vrai si l'adresse IP a une longueur valide, sinon faux
+
+	Description: Vérifie que l'adresse IP passée en paramètre a
+		une longueur valide, c'est-à-dire plus petite que sa longueur
+		totale
 *******************************************************************/
 bool estLongueurValide(size_t indexAdresseIP, size_t longueurAdresseIP) {
 	return (indexAdresseIP < longueurAdresseIP);
 }
 
 /*******************************************************************
-Fonction: extraireOctetIP()
-Paramètres:
-octetIP (par référence) : l'octet IP en type size_t
-indexAdresseIP (par référence) : l'index du caractère
-lu actuellement
-longueurAdresseIP : la longueur de l'adresse IP
-adresseIPTemp : adresse IP à vérifier, entrée par
-l'utilisateur
-Retour: vrai si l'octet IP est valide, sinon faux
-Description: Convertit un octet IP de type char en size_t
+	Fonction: extraireOctetIP()
+
+	Paramètres:
+		octetIP (par référence) : l'octet IP en type size_t
+		indexAdresseIP (par référence) : l'index du caractère
+		lu actuellement
+		longueurAdresseIP : la longueur de l'adresse IP
+		adresseIPTemp : adresse IP à vérifier, entrée par
+		l'utilisateur
+
+	Retour: vrai si l'octet IP est valide, sinon faux
+
+	Description: Convertit un octet IP de type char en size_t
 *******************************************************************/
-bool extraireOctetIP(size_t& octetIP, size_t& indexAdresseIP, size_t longueurAdresseIP, const char* adresseIPTemp) {
+bool extraireOctetIP(size_t& octetIP, size_t& indexAdresseIP, size_t longueurAdresseIP,
+	const char* adresseIPTemp) {
 	//parcourir l'octetIP jusqu'au point
 	while (estLongueurValide(indexAdresseIP, longueurAdresseIP) && !estPoint(adresseIPTemp[indexAdresseIP])) {
 		char caractereActuel = adresseIPTemp[indexAdresseIP++];
@@ -95,18 +112,21 @@ bool extraireOctetIP(size_t& octetIP, size_t& indexAdresseIP, size_t longueurAdr
 }
 
 /*******************************************************************
-Fonction: estFormatIP()
-Paramètres:
-adresseIPTemp : l'adresse IP du serveur entrée par
-l'utilisateur
-Retour: vrai si l'adresse IP respecte le format IPv4, sinon
-faux
-Description: Vérifie que l'adresse IP passée en paramètre est
-valide (format uniquement).
-rejete les adresses dépassant le nombre de points, les
-caractères qui ne sont pas des chiffres, les longueurs
-invalides, etc.
-Source : http://ideone.com/ZmUjeM
+	Fonction: estFormatIP()
+
+	Paramètres:
+	adresseIPTemp : l'adresse IP du serveur entrée par
+		l'utilisateur
+
+	Retour: vrai si l'adresse IP respecte le format IPv4, sinon
+		faux
+
+	Description: Vérifie que l'adresse IP passée en paramètre est
+		valide (format uniquement).
+		rejete les adresses dépassant le nombre de points, les
+		caractères qui ne sont pas des chiffres, les longueurs
+		invalides, etc.
+	Source : http://ideone.com/ZmUjeM
 *******************************************************************/
 bool estFormatIP(char* adresseIPTemp) {
 	//IP invalide si l'adresse est nulle
@@ -162,7 +182,7 @@ bool estPortValide(char* portTemp) {
 		debutPortValide = portTemp[i] == debutPort[i];
 	}
 	
-	//Si le début du port est invalide
+	//Si le début du port est invalide, rejeter le port
 	if (!debutPortValide) {
 		return false;
 	}
@@ -176,6 +196,20 @@ bool estPortValide(char* portTemp) {
 	}
 }
 
+/*******************************************************************
+	Fonction: saisirParametres()
+
+	Paramètres:
+		adresseIP: Adresse IP du serveur
+		port: Port d'écoute du serveur
+
+	Retour: Aucun
+
+	Description: S'occupe de saisir tous les paramètres du serveur
+		en demandant à l'utilisateur l'adresse IP du serveur, son
+		port d'écoute.
+
+*******************************************************************/
 void saisirParametres(char*& adresseIP, char*& port) {
 
 	cout << "Parametres du serveur a joindre" << endl;
@@ -213,8 +247,8 @@ int __cdecl main(int argc, char **argv)
 	struct addrinfo *result = NULL,
 		*ptr = NULL,
 		hints;
-	char motEnvoye[300];
-	char motRecu[200];
+	char motEnvoye[TAILLE_REPONSE];
+	char motRecu[TAILLE_QUESTION];
 	int iResult;
 
 	//--------------------------------------------
@@ -296,7 +330,7 @@ int __cdecl main(int argc, char **argv)
 
 	//------------------------------
 	// On va recevoir la question du serveur
-	iResult = recv(leSocket, motRecu, 199, 0);
+	iResult = recv(leSocket, motRecu, TAILLE_MOT_RECU, 0);
 	if (iResult > 0) {
 		printf("Question: ");
 		printf(motRecu);
@@ -312,7 +346,7 @@ int __cdecl main(int argc, char **argv)
 
 	//-----------------------------
 	// Envoyer la reponse au serveur
-	iResult = send(leSocket, motEnvoye, 299, 0);
+	iResult = send(leSocket, motEnvoye, TAILLE_MOT_ENVOYE, 0);
 	if (iResult == SOCKET_ERROR) {
 		printf("Erreur du send: %d\n", WSAGetLastError());
 		closesocket(leSocket);
@@ -324,11 +358,14 @@ int __cdecl main(int argc, char **argv)
 	}
 	else { printf("Message recu! "); }
 
-	// cleanup
+	// libération des variables
 	closesocket(leSocket);
 	WSACleanup();
+	delete[] adresseIP;
+	delete[] port;
 
 	printf("Appuyez une touche pour finir\n");
 	getchar();
+
 	return 0;
 }

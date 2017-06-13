@@ -1,3 +1,0 @@
-192.168.1.109 : 55185 - au niveau 2
-192.168.1.109 : 55188 - niveau 10
-192.168.1.109 : 55192 - remplissage de caracteres pour tester la longueur du message __________

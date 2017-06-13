@@ -1,0 +1,4 @@
+﻿  main.cpp
+c:\users\kevin\documents\inf3405\reseaux\client\main.cpp(185): warning C4715: 'estPortValide' : les chemins de contrôle ne retournent pas tous une valeur
+  client.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\client\Debug\client.exe
+  client.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\client\Debug\client.pdb (Partial PDB)

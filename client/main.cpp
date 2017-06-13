@@ -194,6 +194,9 @@ bool estPortValide(char* portTemp) {
 	if (debutPortValide && '0' <= portTemp[INDICE_AVANT_FIN_PORT] && portTemp[INDICE_AVANT_FIN_PORT] <= '5') {
 		return true;
 	}
+	else {
+		return false;
+	}
 }
 
 /*******************************************************************

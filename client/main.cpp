@@ -23,9 +23,196 @@
 #define INDICE_AVANT_FIN_PORT 2
 #define INDICE_FIN_PORT 3
 #define	MINIMUM_PORT 6000
-#define MAXIMUM_OCTET_IP 6050
+#define MAXIMUM_PORT 6050
 
 using namespace std;
+
+/*******************************************************************
+Fonction: estCaractereException()
+
+Paramètres:
+caractereIP : caractere actuel lu pour verifier le format
+IP
+
+Retour: vrai si le caractere est en dehors de la plage de
+caractères 0 et 9, sinon faux
+
+Description: Vérifie que l'octet contient des caractères
+d'exception
+*******************************************************************/
+bool estCaractereException(char caractereIP) {
+	return (caractereIP < '0' || '9' < caractereIP);
+}
+
+/*******************************************************************
+Fonction: estPoint()
+
+Paramètres:
+caractereIP : caractere actuel lu pour verifier le format IP
+
+Retour: vrai si le caractere est un point, sinon faux
+
+Description: Vérifie que l'octet est un point
+*******************************************************************/
+bool estPoint(char caractereIP) {
+	return (caractereIP == DELIMITEUR_IP);
+}
+
+/*******************************************************************
+Fonction: estLongueurValide()
+
+Paramètres:
+indexAdresseIP : l'index du caractère lu actuellement
+longueurAdresseIP : la longueur de l'adresse IP
+
+Retour: vrai si l'adresse IP a une longueur valide, sinon faux
+
+Description: Vérifie que l'adresse IP passée en paramètre a
+une longueur valide, c'est-à-dire plus petite que sa longueur
+totale
+*******************************************************************/
+bool estLongueurValide(size_t indexAdresseIP, size_t longueurAdresseIP) {
+	return (indexAdresseIP < longueurAdresseIP);
+}
+
+/*******************************************************************
+Fonction: extraireOctetIP()
+
+Paramètres:
+octetIP (par référence) : l'octet IP en type size_t
+indexAdresseIP (par référence) : l'index du caractère
+lu actuellement
+longueurAdresseIP : la longueur de l'adresse IP
+adresseIPTemp : adresse IP à vérifier, entrée par
+l'utilisateur
+
+Retour: vrai si l'octet IP est valide, sinon faux
+
+Description: Convertit un octet IP de type char en size_t
+*******************************************************************/
+bool extraireOctetIP(size_t& octetIP, size_t& indexAdresseIP, size_t longueurAdresseIP, const char* adresseIPTemp) {
+	//parcourir l'octetIP jusqu'au point
+	while (estLongueurValide(indexAdresseIP, longueurAdresseIP) && !estPoint(adresseIPTemp[indexAdresseIP])) {
+		char caractereActuel = adresseIPTemp[indexAdresseIP++];
+
+		//permet de rejeter les lettres ou d'autres caracteres qui ne sont pas des chiffres
+		if (estCaractereException(caractereActuel)) {
+			return false;
+		}
+
+		//permet de décaler les chiffres lus vers la gauche, tout en convertissant le char en size_t
+		octetIP = (octetIP * BASE_DIX) + (caractereActuel - '0');
+	}
+	return true;
+}
+
+/*******************************************************************
+Fonction: estFormatIP()
+
+Paramètres:
+adresseIPTemp : l'adresse IP du serveur entrée par
+l'utilisateur
+
+Retour: vrai si l'adresse IP respecte le format IPv4, sinon
+faux
+
+Description: Vérifie que l'adresse IP passée en paramètre est
+valide (format uniquement).
+rejete les adresses dépassant le nombre de points, les
+caractères qui ne sont pas des chiffres, les longueurs
+invalides, etc.
+
+Source : http://ideone.com/ZmUjeM
+*******************************************************************/
+bool estFormatIP(char* adresseIPTemp) {
+	//IP invalide si l'adresse est nulle
+	if (adresseIPTemp == NULL) {
+		return false;
+	}
+
+	size_t nPoints = 0, indexAdresseIP = 0;
+	const size_t longueurAdresseIP = strlen(adresseIPTemp);
+
+	while (estLongueurValide(indexAdresseIP, longueurAdresseIP)) {
+		//le premier caractère n'est pas un point
+		if (estPoint(adresseIPTemp[indexAdresseIP])) {
+			return false;
+		}
+
+		//extraire un octet IP
+		size_t octetIP = 0;
+		extraireOctetIP(octetIP, indexAdresseIP, longueurAdresseIP, adresseIPTemp);
+
+		//si la longueur est toujours valide, continuer de vérifier l'adresse et augmenter le nombre de '.'
+		//rencontrés
+		if (estLongueurValide(indexAdresseIP, longueurAdresseIP)) {
+			++nPoints;
+		}
+		//permet notamment d'éliminer les cas tels que 132.207.x.y. et 132.256.x.y
+		if (N_DELIMITEUR_IP < nPoints || octetIP < MINIMUM_OCTET_IP || MAXIMUM_OCTET_IP < octetIP) {
+			return false;
+		}
+
+		//pour sauter le point à la fin de l'octet
+		++indexAdresseIP;
+	}
+
+	//permet de rejeter les adresses n'ayant pas assez de points
+	if (nPoints < N_DELIMITEUR_IP) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+bool estPortValide(char* portTemp) {
+	char debutPort[2] = { '6', '0' }; //mock pour port 60xy
+	bool portValide = true;
+
+	//verifier que les 2 premiers caracteres sont valides : ils doivent etre 60
+	for (size_t i = 0; i < strlen(debutPort) && portValide; i++) {
+		portValide = portTemp[i] == debutPort[i];
+	}
+
+	//verifier le cas 605x, x n'est pas 0
+	if (portTemp[INDICE_AVANT_FIN_PORT] == '5' && portTemp[INDICE_FIN_PORT] != '0') {
+		portValide = false;
+	}
+	//les autres cas : 600x a 6050 
+	else if ('0' <= portTemp[INDICE_AVANT_FIN_PORT] && portTemp[INDICE_AVANT_FIN_PORT] <= '5') {
+		portValide = true;
+	}
+	return portValide;
+}
+
+void saisirParametres(char*& adresseIP, char*& port) {
+
+	cout << "Parametres du serveur a joindre" << endl;
+
+	char adresseIPTemp[16];
+	do {
+		cout << endl << "Entrer l'adresse IP du poste du serveur a joindre: ";
+		gets_s(adresseIPTemp);
+	} while (!estFormatIP(adresseIPTemp));
+
+	//recopier l'adresse IP validée
+	for (size_t i = 0; i < sizeof(adresseIPTemp); i++) {
+		adresseIP[i] = adresseIPTemp[i];
+	}
+
+	char portTemp[5];
+	do {
+		cout << endl << "Entrer le port d'ecoute (entre 6000 et 6050): ";
+		gets_s(portTemp);
+	} while (!estPortValide(portTemp));
+
+	//recopier le port validé
+	for (size_t i = 0; i < sizeof(portTemp); i++) {
+		adresseIP[i] = adresseIPTemp[i];
+	}
+
+}
 
 int __cdecl main(int argc, char **argv)
 {
@@ -62,24 +249,16 @@ int __cdecl main(int argc, char **argv)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;  // Protocole utilisé par le serveur
 
-	// On indique le nom et le port du serveur auquel on veut se connecter
-	char host[16];
+	/* Initialisation des variables */
+	char* adresseIP = new char[16];
+	char* port = new char[5];
 
-	/* Saisie de l'adresse IP du serveur */
-	printf("Entrer l'adresse IP du serveur: ");
-	gets_s(host);
-
-
-	char port[5];
-
-	// TODO: Verifier que le port d'ecoute est entre 6000 et 6050
-	/* Saisie du port d'ecoute */
-	cout << "\nEntrer le port d'ecoute (entre 6000 et 6050): ";
-	gets_s(port);
-	
+	/*Fonction 1*/
+	//Saisie des paramètres du serveur(adresse IP, port d’écoute entre 6000 et 6050)
+	saisirParametres(adresseIP, port);
 
 	// getaddrinfo obtient l'adresse IP du host donné
-	iResult = getaddrinfo(host, port, &hints, &result);
+	iResult = getaddrinfo(adresseIP, port, &hints, &result);
 	if (iResult != 0) {
 		printf("Erreur de getaddrinfo: %d\n", iResult);
 		WSACleanup();
@@ -104,7 +283,7 @@ int __cdecl main(int argc, char **argv)
 	sockaddr_in *adresse;
 	adresse = (struct sockaddr_in *) result->ai_addr;
 	//----------------------------------------------------
-	printf("\nAdresse trouvee pour le serveur %s : %s\n\n", host, inet_ntoa(adresse->sin_addr));
+	printf("\nAdresse trouvee pour le serveur %s : %s\n\n", adresseIP, inet_ntoa(adresse->sin_addr));
 	printf("Tentative de connexion au serveur %s avec le port %s\n\n", inet_ntoa(adresse->sin_addr), port);
 
 	// On va se connecter au serveur en utilisant l'adresse qui se trouve dans
@@ -119,7 +298,7 @@ int __cdecl main(int argc, char **argv)
 		return 1;
 	}
 
-	printf("Connecte au serveur %s:%s\n\n", host, port);
+	printf("Connecte au serveur %s:%s\n\n", adresseIP, port);
 	freeaddrinfo(result);
 
 

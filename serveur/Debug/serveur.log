@@ -1,5 +1,4 @@
 ﻿  main.cpp
-c:\users\kevin\documents\inf3405\reseaux\serveur\main.cpp(553): warning C4101: 'outBuffer' : variable locale non référencée
-c:\users\kevin\documents\inf3405\reseaux\serveur\main.cpp(221): warning C4715: 'extraireOctetIP' : les chemins de contrôle ne retournent pas tous une valeur
+c:\users\kevin\documents\inf3405\reseaux\serveur\main.cpp(562): warning C4101: 'outBuffer' : variable locale non référencée
   serveur.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\serveur\Debug\serveur.exe
   serveur.vcxproj -> C:\Users\kevin\Documents\INF3405\Reseaux\serveur\Debug\serveur.pdb (Partial PDB)

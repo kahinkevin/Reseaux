@@ -27,9 +27,13 @@ int informationsPort;
 /* Constantes globales */
 #define DELIMITEUR_IP '.'
 #define N_DELIMITEUR_IP 3
-#define BASE_DIX 10
 #define	MINIMUM_OCTET_IP 0
 #define MAXIMUM_OCTET_IP 255
+#define LONGUEUR_ADRESSE_IP 16
+#define BASE_DIX 10
+
+#define PORT_MINIMUM 6000
+#define	PORT_MAXIMUM 6050
 
 // List of Winsock error constants mapped to an interpretation string.
 // Note that this list must remain sorted by the error constants'
@@ -218,6 +222,7 @@ bool extraireOctetIP(size_t& octetIP, size_t& indexAdresseIP, size_t longueurAdr
 		//permet de décaler les chiffres lus vers la gauche, tout en convertissant le char en size_t
 		octetIP = (octetIP * BASE_DIX) + (caractereActuel - '0');
 	}
+	return true;
 }
 
 /*******************************************************************
@@ -297,9 +302,9 @@ bool estFormatIP(char* adresseIPTemp) {
 *******************************************************************/
 void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
 
-	char adresseIPTemp[16];
 	cout << "Parametres du serveur" << endl;
 
+	char adresseIPTemp[LONGUEUR_ADRESSE_IP];
 	do {
 		cout << endl << "Entrer l'adresse IP du poste du serveur: ";
 		gets_s(adresseIPTemp);
@@ -311,7 +316,7 @@ void saisirParametres(char*& adresseIP, int& port, int& dureeSondage) {
 	}
 	
 	// Tant que la valeur de port n'est pas entre 6000 et 6050...
-	while (port < 6000 || 6050 < port) {
+	while (port < PORT_MINIMUM || PORT_MAXIMUM < port) {
 		cout << endl << "Entrer le port d'ecoute (entre 6000 et 6050): ";
 		cin >> port;
 		// Verifie si la valeur entree est autre qu'un entier
@@ -389,11 +394,13 @@ void saisirQuestion() {
 		adresseIP:		l'adresse IP du serveur
 		port:			le port d'ecoute
 		dureeSondage:	la duree du sondage
-		ServerSocket:	le socket utilise pour la communication avec client
+		ServerSocket:	le socket utilise pour la communication
+			avec client
 
 	Retour: Aucun
 
-	Description: Nombre entier signifiant s'il y a eu une erreur ou non.
+	Description: Nombre entier signifiant s'il y a eu une erreur
+		ou non. Établit la connexion et démarre le chronomètre.
 
 *******************************************************************/
 int ouvertureSondage(char* adresseIP, int port, int dureeSondage, SOCKET ServerSocket) {
@@ -506,10 +513,10 @@ int main(void) {
 	setsockopt(ServerSocket, SOL_SOCKET, SO_REUSEADDR, option, sizeof(option));
 
 	/* Initialisation des variables */
-	char* adresseIP = new char[16];
+	char* adresseIP = new char[LONGUEUR_ADRESSE_IP];
 	int port = 0;
 	int dureeSondage = 0;
-	int fonction3 = 0;
+	int erreurOuvertureSondage = 0;
 
 	/*Fonction 1*/
 	//Saisie des paramètres du serveur(adresse IP, port d’écoute entre 6000 et 6050, durée du sondage)
@@ -527,9 +534,9 @@ int main(void) {
 	//transmettre la question, sinon notifier le client que le sondage est terminé.
 	//• Recevoir les réponses des clients
 
-	/* La variable fonction3 retourne 1 si une erreur s'est produite dans la fonction*/
-	fonction3 = ouvertureSondage(adresseIP, port, dureeSondage, ServerSocket);
-	if (fonction3 == 1) { return 1; }
+	/* La variable erreurOuvertureSondage retourne 1 si une erreur s'est produite dans la fonction*/
+	erreurOuvertureSondage = ouvertureSondage(adresseIP, port, dureeSondage, ServerSocket);
+	if (erreurOuvertureSondage == 1) { return 1; }
 
 	// Fermer le socket lorsqu'il n'est plus utilisé
 	closesocket(ServerSocket);
@@ -538,6 +545,8 @@ int main(void) {
 
 	std::cout << "Appuyer sur ENTRER pour terminer...";
 	std::cin.ignore();
+	
+	delete adresseIP;
 
 	return 0;
 }

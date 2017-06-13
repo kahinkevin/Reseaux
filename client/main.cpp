@@ -298,8 +298,6 @@ int __cdecl main(int argc, char **argv)
 	// On va recevoir la question du serveur
 	iResult = recv(leSocket, motRecu, 199, 0);
 	if (iResult > 0) {
-		//printf("Nombre d'octets recus: %d\n", iResult);
-		//motRecu[iResult] = '\0';
 		printf("Question: ");
 		printf(motRecu);
 	}
@@ -325,8 +323,6 @@ int __cdecl main(int argc, char **argv)
 		return 1;
 	}
 	else { printf("Message recu! "); }
-
-	//printf("Nombre d'octets envoyes : %ld\n", iResult);
 
 	// cleanup
 	closesocket(leSocket);

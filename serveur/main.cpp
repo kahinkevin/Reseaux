@@ -569,8 +569,6 @@ DWORD WINAPI EchoHandler(void* sd_)
 	if (readBytes > 0) {
 		cout << informationsAdresse << " : " << informationsPort << " - " << reponse << endl;
 		sauvegarderReponse(reponse);
-		string test1 = informationsAdresse;
-		int test2 = informationsPort;
 		informationsAdresse.clear();
 	}
 	else if (readBytes == SOCKET_ERROR) {
